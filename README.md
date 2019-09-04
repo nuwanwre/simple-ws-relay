@@ -4,6 +4,8 @@ This simple Websocket server acts as a relay between two clients. A typical usec
 a web-app to native mobile app communication. The target of this relay is to eliminate complicated REST APIs to do
 facilitate barebones communication between two clients.
 
+Credits: Gists from [martinsik](https://gist.github.com/martinsik/2031681)
+
 ### How it works
 
 1. Each client connects to the Websocket relay with a unique ID. A UUID in this case.
