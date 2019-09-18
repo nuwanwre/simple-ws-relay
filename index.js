@@ -28,14 +28,14 @@ const wsServer = new webSocketServer({
 
 wsServer.on('request', function(request) {
     const { resourceURL : { query: { id } } } = request;
-    console.log((new Date()) + ' Connection from origin ' + request.origin + ' with ID: ' + id);
+    console.log((new Date()) + ': Connection from origin ' + request.origin + ' with ID: ' + id);
 
     let connection = request.accept(null, request.origin);
     connection.id = id;
 
     let index = clients.push(connection) - 1;
 
-    console.log((new Date()) + ' Connection accepted.');
+    console.log((new Date()) + ': Connection accepted.');
 
     connection.on('message', function(message) {
         if (message.type === 'utf8') { // accept only text
@@ -51,6 +51,6 @@ wsServer.on('request', function(request) {
 
     connection.on('close', function(connection) {
         clients.pop(index);
-        console.log(`Connection closed for server: ${id}\nClients connected: ${clients.length}`)
+        console.log((new Date()) + `: Connection closed for server: ${id}\nClients connected: ${clients.length}`)
     });
 });
