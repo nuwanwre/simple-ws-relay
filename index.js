@@ -43,7 +43,7 @@ wsServer.on('request', function(request) {
             console.log(clientMsg);
             clients.forEach(function(client){
                 if (client.id === clientMsg.requestId) {
-                    client.send(JSON.stringify(clientMsg.data));
+                    client.send(JSON.stringify(clientMsg));
                 }
             });
         }
