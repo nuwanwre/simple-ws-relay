@@ -56,8 +56,6 @@ wsServer.on('request', function(request) {
                     client.send(JSON.stringify(clientMsg));
                 }
             });
-
-            cache.push(clientMsg);
         }
     });
 
