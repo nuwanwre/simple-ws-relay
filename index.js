@@ -29,23 +29,23 @@ const wsServer = new webSocketServer({
 
 wsServer.on('request', function(request) {
     const { resourceURL : { query: { id } } } = request;
-    console.log((new Date()) + ': Connection from origin ' + request.origin + ' with ID: ' + id);
 
     let connection = request.accept(null, request.origin);
     connection.id = id;
 
     let index = clients.push(connection) - 1;
 
-    console.log((new Date()) + ': Connection accepted.');
+    console.log((new Date()) + `: Connection accepted from client: ${id}, origin ${request.origin}`);
 
-    // connection.on('open', function() {
-    //     cache.forEach(function(msg){
-    //         if(msg.requestId === id) {
-    //             client.send(JSON.stringify(msg));
-    //             cache.pop(msg)
-    //         }
-    //     })
-    // })
+    connection.on('open', function() {
+        cache.forEach(function(msg){
+            if(msg.requestId === id) {
+                client.send(JSON.stringify(msg));
+                cache.pop(msg);
+                console.log((new Date()) + `: cache released for client: ${id}`)
+            }
+        })
+    })
 
     connection.on('message', function(message) {
         if (message.type === 'utf8') { // accept only text
@@ -54,13 +54,15 @@ wsServer.on('request', function(request) {
             clients.forEach(function(client){
                 if (client.id === clientMsg.requestId) {
                     client.send(JSON.stringify(clientMsg));
+                    return;
                 }
             });
+            cache.push(clientMsg);
         }
     });
 
     connection.on('close', function(connection) {
         clients.pop(index);
-        console.log((new Date()) + `: Connection closed for server: ${id}\nClients connected: ${clients.length}`)
+        console.log((new Date()) + `: Connection closed for client: ${id}\nClients connected: ${clients.length}`)
     });
 });
