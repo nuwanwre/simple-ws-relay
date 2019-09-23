@@ -38,14 +38,14 @@ wsServer.on('request', function(request) {
 
     console.log((new Date()) + ': Connection accepted.');
 
-    connection.on('open', function() {
-        cache.forEach(function(msg){
-            if(msg.requestId === id) {
-                client.send(JSON.stringify(msg));
-                cache.pop(msg)
-            }
-        })
-    })
+    // connection.on('open', function() {
+    //     cache.forEach(function(msg){
+    //         if(msg.requestId === id) {
+    //             client.send(JSON.stringify(msg));
+    //             cache.pop(msg)
+    //         }
+    //     })
+    // })
 
     connection.on('message', function(message) {
         if (message.type === 'utf8') { // accept only text
