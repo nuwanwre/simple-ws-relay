@@ -7,6 +7,7 @@ const webSocketServer = require('websocket').server;
 const http = require('http');
 
 let clients = [ ];
+let cache = [ ];
 
 /**
  * HTTP server
@@ -37,6 +38,15 @@ wsServer.on('request', function(request) {
 
     console.log((new Date()) + ': Connection accepted.');
 
+    connection.on('open', function() {
+        cache.forEach(function(msg){
+            if(msg.requestId === id) {
+                client.send(JSON.stringify(msg));
+                cache.pop(msg)
+            }
+        })
+    })
+
     connection.on('message', function(message) {
         if (message.type === 'utf8') { // accept only text
             let clientMsg = JSON.parse(message.utf8Data);
@@ -44,8 +54,11 @@ wsServer.on('request', function(request) {
             clients.forEach(function(client){
                 if (client.id === clientMsg.requestId) {
                     client.send(JSON.stringify(clientMsg));
+                    return;
                 }
             });
+
+            cache.push(clientMsg);
         }
     });
 
