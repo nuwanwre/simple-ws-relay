@@ -26,6 +26,12 @@ Credits: Gists from [martinsik](https://gist.github.com/martinsik/2031681)
 
 4. On connection close, clients are removed from temporary collection and memory is free-ed.
 
+### Caching capabilities
+
+On occasions where a client has lost the connection, webserver will cache the response. Once the client connects with the same clientId, the response will be delivered again. 
+
+For now, the cache is held for a indefinite amount of time. Later implementations will include limited-time caching to reduce load on the Websocket server.
+
 ### To Run
 
 Simply, `npm install && node index.js`
