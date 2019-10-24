@@ -52,7 +52,7 @@ wsServer.on('request', function(request) {
             clients.forEach(function(client){
                 if (client.id === clientMsg.requestId) {
                     client.send(JSON.stringify(clientMsg));
-                    return;
+                    break;
                 }
             });
             console.log(`Caching for: ${clientMsg.requestId}`);
