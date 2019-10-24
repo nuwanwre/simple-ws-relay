@@ -37,10 +37,10 @@ wsServer.on('request', function(request) {
 
     console.log((new Date()) + `: Connection accepted from client: ${id}, origin ${request.origin}`);
 
-    cache.forEach(function(msg){
+    cache.forEach(function(msg, msgIndex){
         if(msg.requestId === id) {
             connection.send(JSON.stringify(msg));
-            cache.pop(msg);
+            cache.splice(msgIndex, 1);
             console.log((new Date()) + `: cache released for client: ${id}`)
         }
     })
