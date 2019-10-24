@@ -63,7 +63,7 @@ wsServer.on('request', function(request) {
 
     connection.on('close', function(connection) {
         if (index > -1) {
-            console.log((new Date()) + `: Connection closed for client: ${index}\nClients connected: ${clients.length}`)
+            console.log((new Date()) + `: Connection closed for client: ${index}\nClients connected: ${clients.length-1}`)
             clients.splice(index, 1);
         }
     });
