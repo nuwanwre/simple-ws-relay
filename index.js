@@ -62,7 +62,12 @@ wsServer.on('request', function(request) {
     });
 
     connection.on('close', function(connection) {
-        clients.pop(index);
-        console.log((new Date()) + `: Connection closed for client: ${id}\nClients connected: ${clients.length}`)
+        // clients.pop(index);
+        clients.forEach(function(client, closeIndex){
+            if (client.id === connection.id) {
+                cache.splice(closeIndex, 1);
+                console.log((new Date()) + `: Connection closed for client: ${id}\nClients connected: ${connection.id}`)
+            }
+        });
     });
 });
