@@ -55,9 +55,9 @@ wsServer.on('request', function(request) {
                     return;
                 }
             });
+            console.log(`Caching for: ${clientMsg.requestId}`);
             cache.push(clientMsg);
         }
-        console.log(cache);
     });
 
     connection.on('close', function(connection) {
