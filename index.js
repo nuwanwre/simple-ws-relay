@@ -37,27 +37,27 @@ wsServer.on('request', function(request) {
 
     console.log((new Date()) + `: Connection accepted from client: ${id}, origin ${request.origin}`);
 
-    // cache.forEach(function(msg, msgIndex){
-    //     if(msg.requestId === id) {
-    //         connection.send(JSON.stringify(msg));
-    //         cache.splice(msgIndex, 1);
-    //         console.log((new Date()) + `: cache released for client: ${id}`)
-    //     }
-    // })
+    cache.forEach(function(msg, msgIndex){
+        if(msg.requestId === id) {
+            connection.send(JSON.stringify(msg));
+            cache.splice(msgIndex, 1);
+            console.log((new Date()) + `: cache released for client: ${id}`)
+        }
+    })
 
     connection.on('message', function(message) {
-        if (message.type === 'utf8') { // accept only text
+        if (message.type === 'utf8') {
+            let clientExists = false;
             let clientMsg = JSON.parse(message.utf8Data);
             console.log(clientMsg);
             clients.forEach(function(client){
                 if (client.id === clientMsg.requestId) {
                     client.send(JSON.stringify(clientMsg));
-                    return;
-                } else {
-                    console.log(`Caching for: ${clientMsg.requestId}`);
-                    //cache.push(clientMsg);
+                    clientExists = true;
                 }
             });
+            if (!clientExists) 
+                cache.push(clientMsg);
         }
     });
 
