@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "redis": "^2.8.0",
     "websocket": "^1.0.29"
   }
 }

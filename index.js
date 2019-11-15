@@ -5,9 +5,15 @@ process.title = 'ecrx-relay';
 const webSocketsServerPort = 1337;
 const webSocketServer = require('websocket').server;
 const http = require('http');
+const redis = require('redis');
 
 let clients = [ ];
 let cache = [ ];
+let redisClient = redis.createClient();
+
+redisClient.on("error", function(err) {
+    console.log("Error: " + err);
+})
 
 /**
  * HTTP server
