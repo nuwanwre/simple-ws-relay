@@ -1,70 +1,95 @@
-"use strict";
-
-process.title = 'ecrx-relay';
-
-const webSocketsServerPort = 1337;
-const webSocketServer = require('websocket').server;
 const http = require('http');
+const io = require('socket.io')();
+const socketAuth = require('socketio-auth');
+const adapter = require('socket.io-redis');
 
-let clients = [ ];
-let cache = [ ];
+const redis = require('./redis');
 
-/**
- * HTTP server
- */
-const server = http.createServer(function(request, response) {
-    // Not important for us. We're writing WebSocket server, not HTTP server
+const PORT = process.env.PORT || 1337;
+
+const server = http.createServer();
+
+const redisAdapter = adapter({
+    host: process.env.REDIS_HOST || 'localhost',
+    port: process.env.REDIS_PORT || 6379,
+    password: process.env.REDIS_PASS || 'password',
 });
 
-server.listen(webSocketsServerPort, function() {
-    console.log((new Date()) + " Server is listening on port " + webSocketsServerPort);
-});
+io.attach(server);
+io.adapter(redisAdapter);
 
-/**
- * WebSocket server
- */
-const wsServer = new webSocketServer({
-    httpServer: server
-});
+// Placeholder function to authenticate users that are connecting to Web Socket
+async function authenticateClient(token) {
+    return new Promise((resolve, reject) => {
 
-wsServer.on('request', function(request) {
-    const { resourceURL : { query: { id } } } = request;
+        setTimeout(() => {
+            const users = [{
+                id: 1,
+                name: 'ibct',
+                token: 'secret',
+            }, ];
 
-    let connection = request.accept(null, request.origin);
-    connection.id = id;
+            const user = users.find((user) => user.token === token);
 
-    let index = clients.push(connection) - 1;
+            if (!user) {
+                return reject('USER_NOT_FOUND');
+            }
 
-    console.log((new Date()) + `: Connection accepted from client: ${id}, origin ${request.origin}`);
+            return resolve(user);
+        }, 200);
+    });
+}
 
-    cache.forEach(function(msg, msgIndex){
-        if(msg.requestId === id) {
-            connection.send(JSON.stringify(msg));
-            cache.splice(msgIndex, 1);
-            console.log((new Date()) + `: cache released for client: ${id}`)
-        }
-    })
+socketAuth(io, {
+    authenticate: async (socket, data, callback) => {
+        const {
+            // token,
+            clientId,
+        } = data;
 
-    connection.on('message', function(message) {
-        if (message.type === 'utf8') {
-            let clientExists = false;
-            let clientMsg = JSON.parse(message.utf8Data);
-            console.log(clientMsg);
-            clients.forEach(function(client){
-                if (client.id === clientMsg.requestId) {
-                    client.send(JSON.stringify(clientMsg));
-                    clientExists = true;
-                }
+        try {
+            //const user = await authenticateClient(token);
+            const canConnect = await redis
+                .setAsync(`users:${clientId}`, socket.id, 'NX', 'EX', 30);
+
+            if (!canConnect) {
+                return callback({
+                    message: 'ALREADY_CONNECTED'
+                }, false);
+            }
+
+            socket.clientId = clientId;
+
+            return callback(null, true);
+        } catch (e) {
+            console.log(`Client: ${socket.clientId} with SocketId: ${socket.id} unauthorized.`);
+            return callback({
+                message: 'UNAUTHORIZED'
             });
-            if (!clientExists) 
-                cache.push(clientMsg);
         }
-    });
+    },
+    postAuthenticate: async (socket) => {
+        console.log(`Client: ${socket.clientId} with SocketId: ${socket.id} authenticated.`);
 
-    connection.on('close', function(connection) {
-        if (index > -1) {
-            console.log((new Date()) + `: Connection closed for client: ${index}\nClients connected: ${clients.length-1}`)
-            clients.splice(index, 1);
+        socket.conn.on('packet', async (packet) => {
+            if (socket.auth && packet.type === 'ping') {
+                await redis.setAsync(`users:${socket.clientId}`, socket.id, 'XX', 'EX', 30);
+            }
+
+            if (socket.auth && packet.type === 'message') {
+                console.log(JSON.parse(packet.data.substring(2, packet.data.length-1)));
+                // console.log(JSON.parse(packet.data));
+            }
+        });
+    },
+    disconnect: async (socket) => {
+        
+        console.log(`SocketId: ${socket.id} disconnected`);
+
+        if (socket.id) {
+            await redis.delAsync(`users:${socket.clientId}`);
         }
-    });
-});
+    },
+})
+
+server.listen(PORT);
