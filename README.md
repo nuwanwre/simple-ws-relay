@@ -34,3 +34,7 @@ On occasions where a client has lost the connection, webserver will cache the re
 
 Simply, `yarn start`
 
+### Detailed Flow
+
+![WebSocket Flow](docs/Websocket-Relay-Server.png)
+

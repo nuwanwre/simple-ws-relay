@@ -51,10 +51,10 @@ socketAuth(io, {
         try {
             //const user = await authenticateClient(token);
             const canConnect = await redis
-                .setAsync(`users:${clientId}`, socket.id, 'NX', 'EX', 30);
+                .setAsync(`users:${clientId}`, socket.id, 'NX', 'EX', 5);
                 
             socket.clientId = clientId;
-            
+
             if (!canConnect) {
                 return callback({
                     message: 'ALREADY_CONNECTED'
@@ -66,6 +66,7 @@ socketAuth(io, {
                 if (r !== null) {
                     socket.to(`${socket.id}`).emit('message', r);
                     redis.delAsync(`cache:${clientId}`);
+                    console.log(`Cached released for Client: ${clientId} with SocketId: ${socket.id}`);
                 }
             });
 
@@ -88,16 +89,17 @@ socketAuth(io, {
             if (socket.auth && packet.type === 'message') {
                 const rawData = packet.data.substring(2, packet.data.length-1);
                 data = JSON.parse(rawData);
-                console.log(data);
+                // console.log(data);
 
-                redis.getAsync(`users:${data.payload.requestId}`).then(r => {
-                    console.log(r)
-                    if (r === null) {
-                        redis.setAsync(`cache:${data.payload.requestId}`, data.payload.payload, 'XX', 'EX', 600);
-                    } else {
-                        socket.to(`${r}`).emit('message', data.payload.payload);
-                    }
-                })
+                if (typeof data.payload !== "undefined")
+                    redis.getAsync(`users:${data.payload.requestId}`).then(r => {
+                        // console.log(`clientId: ${data.payload.requestId} with socketId: ${r}`);
+                        if (r === null) {
+                            redis.setAsync(`cache:${data.payload.requestId}`, data.payload.payload, 'NX', 'EX', 600);
+                        } else {
+                            socket.to(`${r}`).emit('message', data.payload.payload);
+                        }
+                    })
             }
         });
     },
