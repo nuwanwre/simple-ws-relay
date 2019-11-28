@@ -1,10 +1,10 @@
-# Simple Websocket based Relay
+# Simple Websocket Relay
 
-This simple Websocket server acts as a relay between two clients. A typical usecase would be
-a web-app to native mobile app communication. The target of this relay is to eliminate complicated REST APIs to do
-facilitate barebones communication between two clients.
+This Websocket Server acts as a relay between two clients. This server gives the option of token based authentication via a DB Server or similar service. In addition, the server supports caching of messages for a limited amount of time(10 min by default). 
 
-Credits: Gists from [martinsik](https://gist.github.com/martinsik/2031681)
+Connections and Client messages are cached with the support of Redis. Therefore a Redis Server is required on the same host.
+
+Credits: Gists from [mariotacke](https://github.com/mariotacke/blog-single-user-websocket)
 
 ### How it works
 
@@ -15,7 +15,7 @@ Credits: Gists from [martinsik](https://gist.github.com/martinsik/2031681)
 2. The connection is then stored respective to each client ID. 
 
 3. When a message is sent from a client, the *requestId* is used to identify the recieving client.
-	```
+	```js
 	{
 		requestId: 47dd72d9-32b9-414a-95e0-c05adb0ee200,
 		data: {
@@ -28,11 +28,9 @@ Credits: Gists from [martinsik](https://gist.github.com/martinsik/2031681)
 
 ### Caching capabilities
 
-On occasions where a client has lost the connection, webserver will cache the response. Once the client connects with the same clientId, the response will be delivered again. 
-
-For now, the cache is held for a indefinite amount of time. Later implementations will include limited-time caching to reduce load on the Websocket server.
+On occasions where a client has lost the connection, webserver will cache the response. Once the client connects with the same clientId, the response will be delivered again. Please note that this cache is set by the Redis Server. You have the option of modifying the time limit in the source.
 
 ### To Run
 
-Simply, `npm install && node index.js`
+Simply, `yarn start`
 

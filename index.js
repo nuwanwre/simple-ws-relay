@@ -1,3 +1,4 @@
+require('dotenv').config();
 const http = require('http');
 const io = require('socket.io')();
 const socketAuth = require('socketio-auth');
@@ -51,14 +52,22 @@ socketAuth(io, {
             //const user = await authenticateClient(token);
             const canConnect = await redis
                 .setAsync(`users:${clientId}`, socket.id, 'NX', 'EX', 30);
-
+                
+            socket.clientId = clientId;
+            
             if (!canConnect) {
                 return callback({
                     message: 'ALREADY_CONNECTED'
-                }, false);
+                });
             }
 
-            socket.clientId = clientId;
+            // Check Cache
+            redis.getAsync(`cache:${clientId}`).then(r => {
+                if (r !== null) {
+                    socket.to(`${socket.id}`).emit('message', r);
+                    redis.delAsync(`cache:${clientId}`);
+                }
+            });
 
             return callback(null, true);
         } catch (e) {
@@ -77,14 +86,23 @@ socketAuth(io, {
             }
 
             if (socket.auth && packet.type === 'message') {
-                console.log(JSON.parse(packet.data.substring(2, packet.data.length-1)));
-                // console.log(JSON.parse(packet.data));
+                const rawData = packet.data.substring(2, packet.data.length-1);
+                data = JSON.parse(rawData);
+                console.log(data);
+
+                redis.getAsync(`users:${data.payload.requestId}`).then(r => {
+                    console.log(r)
+                    if (r === null) {
+                        redis.setAsync(`cache:${data.payload.requestId}`, data.payload.payload, 'XX', 'EX', 600);
+                    } else {
+                        socket.to(`${r}`).emit('message', data.payload.payload);
+                    }
+                })
             }
         });
     },
     disconnect: async (socket) => {
-        
-        console.log(`SocketId: ${socket.id} disconnected`);
+        console.log(`Client: ${socket.clientId} with SocketId: ${socket.id} disconnected`);
 
         if (socket.id) {
             await redis.delAsync(`users:${socket.clientId}`);
