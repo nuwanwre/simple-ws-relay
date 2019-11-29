@@ -32,7 +32,18 @@ On occasions where a client has lost the connection, webserver will cache the re
 
 ### To Run
 
-Simply, `yarn start`
+1. Start Redis Server instance. The Relay uses default redis configuration to connect to an instance, but you may modify `.env` to suit your instance.
+
+2. Then simply, `yarn start` or `npm start`
+
+### How to Run Tests
+
+The tests are designed to emulate most client scenarios from Authentication, relaying a message, and testing the cache releasing functions. 
+
+1. Start Redis Server
+2. Start Websocket Relay with `yarn start` or `npm start`
+3. On another, terminal prompt do `yarn run tests` or `npm run tests` 
+
 
 ### Detailed Flow
 
