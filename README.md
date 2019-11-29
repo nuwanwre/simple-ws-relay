@@ -14,7 +14,7 @@ Credits: Gists from [mariotacke](https://github.com/mariotacke/blog-single-user-
 
 2. The connection is then stored respective to each client ID. 
 
-3. When a message is sent from a client, the *requestId* is used to identify the recieving client.
+3. When a message is sent from a client, the `requestId` is used to identify the recieving client.
 	```
 	{
 		requestId: 47dd72d9-32b9-414a-95e0-c05adb0ee200,
