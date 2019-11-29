@@ -9,39 +9,11 @@ let
     testClient1,
     testClient2;
 
-beforeAll(done => {
-    // testClient = testSocket(endpoint);
-    done();
-});
-
-
 afterAll(done => {
     testClient1.disconnect();
     testClient2.disconnect();
     done();
 })
-
-// beforeEach((done) => {
-//     // Setup
-//     // Do not hardcode server port and address, square brackets are used for IPv6
-//     socket = io.connect(`http://[${httpServerAddr.address}]:${httpServerAddr.port}`, {
-//         'reconnection delay': 0,
-//         'reopen delay': 0,
-//         'force new connection': true,
-//         transports: ['websocket'],
-//     });
-//     socket.on('connect', () => {
-//         done();
-//     });
-// });
-
-// afterEach((done) => {
-//     // Cleanup
-//     if (socket.connected) {
-//         socket.disconnect();
-//     }
-//     done();
-// });
 
 describe('Socket Client Tests', () => {
     test('Valid Authentication for Client1', done => {
@@ -110,13 +82,14 @@ describe('Socket Client Tests', () => {
                     token: 'testSecret',
                     clientId: clientId2
                 });
+
+                testClient2.on('message', (data) => {
+                    expect(data).toBe(clientData.payload);
+                    done();
+                })
             });
             
-        }, 1)
+        }, 100)
 
-        testClient2.on('message', (data) => {
-            expect(data).toBe(clientData.payload);
-            done();
-        })
     });
 });

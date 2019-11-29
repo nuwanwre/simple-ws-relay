@@ -51,7 +51,7 @@ socketAuth(io, {
         try {
             //const user = await authenticateClient(token);
             const canConnect = await redis
-                .setAsync(`users:${clientId}`, socket.id, 'NX', 'EX', 5);
+                .setAsync(`users:${clientId}`, socket.id, 'NX', 'EX', 30);
                 
             socket.clientId = clientId;
 
@@ -64,7 +64,7 @@ socketAuth(io, {
             // Check Cache
             redis.getAsync(`cache:${clientId}`).then(r => {
                 if (r !== null) {
-                    socket.to(`${socket.id}`).emit('message', r);
+                    io.to(`${socket.id}`).emit('message', r);
                     redis.delAsync(`cache:${clientId}`);
                     console.log(`Cached released for Client: ${clientId} with SocketId: ${socket.id}`);
                 }
