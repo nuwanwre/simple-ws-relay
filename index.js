@@ -1,6 +1,7 @@
 require('dotenv').config();
-const http = require('http');
-const io = require('socket.io')();
+var fs = require('fs');
+const app = require('express')();
+const https = require('https');
 const socketAuth = require('socketio-auth');
 const adapter = require('socket.io-redis');
 
@@ -8,7 +9,15 @@ const redis = require('./redis');
 
 const PORT = process.env.PORT || 1337;
 
-const server = http.createServer();
+const server = https.createServer({
+    key: fs.readFileSync('./certs/server.key'),
+    cert: fs.readFileSync('./certs/server.crt'),
+    // ca: fs.readFileSync('./test_ca.crt'),
+    requestCert: false,
+    rejectUnauthorized: false
+}, app);
+
+const io = require('socket.io')();
 
 const redisAdapter = adapter({
     host: process.env.REDIS_HOST || 'localhost',
