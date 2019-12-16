@@ -12,12 +12,12 @@ const PORT = process.env.PORT || 1337;
 const server = https.createServer({
     key: fs.readFileSync('./certs/server.key'),
     cert: fs.readFileSync('./certs/server.crt'),
-    // ca: fs.readFileSync('./test_ca.crt'),
+    ca: fs.readFileSync('./certs/rootCA.crt'),
     requestCert: false,
     rejectUnauthorized: false
 }, app);
 
-const io = require('socket.io')();
+const io = require('socket.io').listen(server);
 
 const redisAdapter = adapter({
     host: process.env.REDIS_HOST || 'localhost',
@@ -25,7 +25,7 @@ const redisAdapter = adapter({
     password: process.env.REDIS_PASS || 'password',
 });
 
-io.attach(server);
+//io.attach(server);
 io.adapter(redisAdapter);
 
 // Placeholder function to authenticate users that are connecting to Web Socket
@@ -61,7 +61,7 @@ socketAuth(io, {
             //const user = await authenticateClient(token);
             const canConnect = await redis
                 .setAsync(`users:${clientId}`, socket.id, 'NX', 'EX', 30);
-                
+
             socket.clientId = clientId;
 
             if (!canConnect) {
@@ -121,4 +121,4 @@ socketAuth(io, {
     },
 })
 
-server.listen(PORT);
+server.listen(PORT, "0.0.0.0");
