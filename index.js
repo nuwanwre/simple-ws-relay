@@ -64,9 +64,9 @@ socketAuth(io, {
             // Check Cache
             redis.getAsync(`cache:${clientId}`).then(r => {
                 if (r !== null) {
-                    io.to(`${socket.id}`).emit('message', r);
+                    io.to(`${socket.id}`).emit('message', JSON.parse(r));
                     redis.delAsync(`cache:${clientId}`);
-                    console.log(`Cached released for Client: ${clientId} with SocketId: ${socket.id}`);
+                    console.log(`Cache released for Client: ${clientId} with SocketId: ${socket.id}`);
                 }
             });
 
@@ -95,7 +95,7 @@ socketAuth(io, {
                     redis.getAsync(`users:${data.payload.requestId}`).then(r => {
                         // console.log(`clientId: ${data.payload.requestId} with socketId: ${r}`);
                         if (r === null) {
-                            redis.setAsync(`cache:${data.payload.requestId}`, data.payload.payload, 'NX', 'EX', 600);
+                            redis.setAsync(`cache:${data.payload.requestId}`, JSON.stringify(data.payload.payload), 'NX', 'EX', 600);
                         } else {
                             socket.to(`${r}`).emit('message', data.payload.payload);
                         }
