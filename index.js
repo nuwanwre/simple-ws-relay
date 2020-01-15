@@ -1,7 +1,7 @@
 require('dotenv').config();
 var fs = require('fs');
 const app = require('express')();
-const https = require('https');
+const rootServer = process.env.HTTPS === "true" ? require('https') : require('http');
 const socketAuth = require('socketio-auth');
 const adapter = require('socket.io-redis');
 
@@ -9,13 +9,14 @@ const redis = require('./redis');
 
 const PORT = process.env.PORT || 1337;
 
-const server = https.createServer({
-    key: fs.readFileSync('./certs/server.key'),
-    cert: fs.readFileSync('./certs/server.crt'),
-    ca: fs.readFileSync('./certs/rootCA.crt'),
-    requestCert: false,
-    rejectUnauthorized: false
-}, app);
+const server = process.env.HTTPS === "true" ? 
+                rootServer.createServer({
+                    key: fs.readFileSync('./certs/server.key'),
+                    cert: fs.readFileSync('./certs/server.crt'),
+                    ca: fs.readFileSync('./certs/rootCA.crt')
+                }, app) 
+                :
+                rootServer.createServer();
 
 const io = require('socket.io').listen(server);
 
@@ -24,6 +25,8 @@ const redisAdapter = adapter({
     port: process.env.REDIS_PORT || 6379,
     password: process.env.REDIS_PASS || 'password',
 });
+
+console.log(`Server started on port: ${process.env.PORT} with HTTPS: ${process.env.HTTPS}\n`);
 
 //io.attach(server);
 io.adapter(redisAdapter);

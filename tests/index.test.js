@@ -1,7 +1,7 @@
 require('dotenv').config();
 const 
     testSocket = require('socket.io-client'),
-    endpoint = `https://localhost:${process.env.PORT}`,
+    endpoint = `${process.env.HTTPS === "true" ? 'https' : 'http'}://${process.env.HOST}:${process.env.PORT}`,
     clientId1 = '9b44d19c-7f6e-4ea1-8366-e554c3c3ab1d',
     clientId2 = 'a49feea4-c958-4b80-b80f-c22909add703';
 
@@ -14,6 +14,8 @@ afterAll(done => {
     testClient2.disconnect();
     done();
 })
+
+console.log(`Running tests on: ${endpoint}`);
 
 describe('Socket Client Tests', () => {
     test('Valid Authentication for Client1', done => {
