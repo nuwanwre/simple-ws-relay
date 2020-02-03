@@ -1,6 +1,6 @@
 # Websocket Relay Server
 
-Ready to deploy Websocket based relay server with caching support. Please refer to the flow diagram at the end of this document for a detailed overview. Optionally, the relay server also supports basic authentication of clients. This authentication mechanism can be extended to integrate a regular client authorization techniques such as OAuth. 
+This is a ready-to-deploy Websocket based relay server with caching support. Please refer to the flow diagram at the end of this document for a detailed overview. Additionally, the relay server also supports basic authentication of clients. This authentication mechanism can be extended to integrate a regular client authorization techniques such as OAuth. 
 
 ### Technical Details
 
