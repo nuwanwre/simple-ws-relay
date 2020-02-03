@@ -1,48 +1,44 @@
-# Simple Websocket Relay
+# Websocket Relay Server
 
-This Websocket Server acts as a relay between two clients. This server gives the option of token based authentication via a DB Server or similar service. In addition, the server supports caching of messages for a limited amount of time(10 min by default). 
+Ready to deploy Websocket based relay server with caching support. Please refer to the flow diagram at the end of this document for a detailed overview. Optionally, the relay server also supports basic authentication of clients. This authentication mechanism can be extended to integrate a regular client authorization techniques such as OAuth. 
 
-Connections and Client messages are cached with the support of Redis. Therefore a Redis Server is required on the same host.
+### Technical Details
+
+Client connection status, and caching is done in conjuction with Redis. The Redis Server can be configured to have a username, and password. But default implementation assumes such mechanisms are not in use. 
+
+The relay server also supports HTTPS, given proper Key, Certificate and Certficate Authority. Self-signed certificates maybe used, but connections are not guaranteed to work with major browser clients. In such cases HTTP deployments are also possible.
+
+### Setting Up
+
+1. Install `redis-server` on your deployment platform
+2. Start `redis-server`
+3. Clone this repo and navigate to the directory
+4. Open `.env` on a text editor
+	```
+	REDIS_HOST=localhost
+	REDIS_PORT=6379
+	REDIS_PASS=password
+	PORT=1337
+	HOST=localhost
+	HTTPS=true
+	```
+5. Alter the configurations to suit your configuration
+	
+	The `HOST` config is for running tests. `PORT` is which the relay server listens to incoming connections.
+
+6. Starting the server.
+
+	You may use `node index.js`, but on production it is advised to use `pm2`. If so, simply, `pm2 start index.js`. Monitoring can be done at `pm2 monit`.
 
 Credits: Gists from [mariotacke](https://github.com/mariotacke/blog-single-user-websocket)
 
-### How it works
-
-1. Each client connects to the Websocket relay with a unique ID. A UUID in this case.
-	
-	`ws://192.168.1.2:1337/?id=47dd72d9-32b9-414a-95e0-c05adb0ee200`
-
-2. The connection is then stored respective to each client ID. 
-
-3. When a message is sent from a client, the `requestId` is used to identify the recieving client.
-	```
-	{
-		requestId: 47dd72d9-32b9-414a-95e0-c05adb0ee200,
-		data: {
-			payload: 'somepayload'
-		}
-	}
-	```
-
-4. On connection close, clients are removed from temporary collection and memory is free-ed.
-
-### Caching capabilities
-
-On occasions where a client has lost the connection, webserver will cache the response. Once the client connects with the same clientId, the response will be delivered again. Please note that this cache is set by the Redis Server. You have the option of modifying the time limit in the source.
-
-### To Run
-
-1. Start Redis Server instance. The Relay uses default redis configuration to connect to an instance, but you may modify `.env` to suit your instance.
-
-2. Then simply, `yarn start` or `npm start`
-
-### How to Run Tests
+### Testing
 
 The tests are designed to emulate most client scenarios from Authentication, relaying a message, and testing the cache releasing functions. 
 
-1. Start Redis Server
-2. Start Websocket Relay with `yarn start` or `npm start`
-3. On another, terminal prompt do `yarn run tests` or `npm run tests` 
+The `HOST` config on `.env` enables you to test the relay server locally, or remotely pointing to a deployed relay server. 
+
+To run tests, simply, `npm run tests`
 
 
 ### Detailed Flow
