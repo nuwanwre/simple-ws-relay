@@ -30,7 +30,7 @@ The relay server also supports HTTPS, given proper Key, Certificate and Certfica
 
 	You may use `node index.js`, but on production it is advised to use `pm2`. If so, simply, `pm2 start index.js`. Monitoring can be done at `pm2 monit`.
 
-Credits: Gists from [mariotacke](https://github.com/mariotacke/blog-single-user-websocket)
+> Credits: Gists from [mariotacke](https://github.com/mariotacke/blog-single-user-websocket)
 
 ### Testing
 

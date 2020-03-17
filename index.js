@@ -11,8 +11,8 @@ const PORT = process.env.PORT || 1337;
 
 const server = process.env.HTTPS === "true" ? 
                 rootServer.createServer({
-                    key: fs.readFileSync('./certs/server.key'),
-                    cert: fs.readFileSync('./certs/server.crt'),
+                    key: fs.readFileSync('./certs/key.pem'),
+                    cert: fs.readFileSync('./certs/cert.pem'),
                     ca: fs.readFileSync('./certs/rootCA.crt')
                 }, app) 
                 :
